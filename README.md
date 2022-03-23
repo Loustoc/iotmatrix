@@ -1,3 +1,5 @@
+tool & repo for working on emoji characters in 8x8 format forked from : https://github.com/jorydotcom/matrix-emoji modified for my own IoT need
+
 # matrix emoji
 a tool &amp; repo for working on emoji characters in 8x8 format.
 Brought to you (so far) by [@rwaldron](https://github.com/rwaldron) &amp; yours truly. 
