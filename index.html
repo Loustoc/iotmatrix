@@ -1,0 +1,164 @@
+<!--Just type your own thingspeak api key in the script below and you should be good to go-->
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset=utf-8>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/es6-shim/0.22.2/es6-shim.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/2.0.2/anime.min.js"></script>
+    <script type="text/javascript" src="/js/iotmatrix.js"></script>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+      <link rel="stylesheet" type="text/css" href="/css/iotmatrix.css" media="screen"/>
+    <title>Panneau de contrôle des LEDs</title>
+  </head>
+  <body>
+    <h1 class="titre"><span class="wrapper"><span class="letters">Panneau de
+        contrôle des LEDs</span></span></h1>
+        <script src="/js/iotmatrix.js"></script>
+
+    <div class="instructionblock">
+    <span class="instructions">Maintenez
+        la touche </span> <img alt="Touche Shift" src="images/shift.svg"/> <span class="instructions">pour colorer plusieurs cases à la suite.</span> 
+   </div>
+        <div class="master">
+          <div id="container" class="matrice" style="text-align: center;"></div>
+    <div class="actions"><button class="command" id="save"> Envoyer
+        la matrice au panneau led dans ma chambre </button><button class="reset"
+
+        id="new"> Effacer </button></div>
+    <ul id="sent" style="text-align: center;">
+    </ul>
+    <div style="text-align: center;">
+      <footer><a href="https://github.com/jorydotcom/matrix-emoji/">Fork de </a><a
+
+          href="https://github.com/jorydotcom/matrix-emoji/">ce repo</a><a href="https://github.com/jorydotcom/matrix-emoji/"><img
+
+            src="/images/GitHub-Mark-32px.png" alt="githublogo" title="git"></a></footer>
+    </div>
+  </div>
+
+    <div style="text-align: center;">
+    <script>
+
+    var memory = new Array(64);
+    var buttons = [];
+    var dims = [8, 8];
+    var button = document.createElement("button");
+    var container = document.getElementById("container");
+    var character = document.getElementById("character");
+    var output = document.getElementById("output");
+    var sent = document.getElementById("sent");
+
+    button.classList.add("led");
+
+    for (var i = 0; i < dims[0]; i++) {
+      for (var j = 0; j < dims[0]; j++) {
+        buttons.push(container.appendChild(button.cloneNode()));
+      }
+    }
+
+    function newMatrix() {
+      rows = [
+          "00000000",
+          "00000000",
+          "00000000",
+          "00000000",
+          "00000000",
+          "00000000",
+          "00000000",
+          "00000000"
+        ];
+      Array.from(rows.reduce(function(accum, row) {
+        return accum.concat(row);
+      }, ""), Number).forEach(function(led, index) {
+        buttons[index].classList.remove("active");
+
+        if (led) {
+          buttons[index].classList.add("active");
+        }
+      });
+      ;  
+      output.value=null;
+  
+  }  
+    function asBinaryArray() {
+      var result = [];
+      var all = buttons.map(function(button) {
+        return +button.classList.contains("active");
+      });
+
+      for (var i = 0; i < 8; i++) {
+        result.push(all.slice(i * 8, i * 8 + 8).join(""));
+      }
+
+      return result;
+    }
+
+    function padLeft(nr, n, str){
+      return Array(n - String(nr).length + 1).join(str || "0") + nr;
+    }
+
+    function bin2hex(bin) {
+      return parseInt(bin, 2).toString(16);
+    }
+
+
+    function formatTS() {
+     
+        JSON.stringify(asBinaryArray());
+        console.log( asBinaryArray().map(function(v) { return parseInt(v, 2); }) );
+      
+
+      asBinaryArray().map(function(v) {
+        return "0x" + padLeft(bin2hex(v), 2);
+      }).join(", ");
+    }
+
+    container.addEventListener("click", function(event) {
+      if (event.target.nodeName === "DIV") {
+        return;
+      }
+      event.target.classList.toggle("active");
+      formatTS();
+    }, false);
+
+    var dragging = false;
+    container.addEventListener("mouseover", function(event) {
+      if (event.target.nodeName === "DIV" || event.shiftKey == false) {
+        return;
+      }
+      if(dragging) {
+        event.target.classList.add("active");
+      }
+    });
+
+    container.addEventListener("mousedown", function(event) {
+      if (event.target.nodeName === "DIV" || event.shiftKey == false) {
+        return;
+      }
+      dragging = true;
+      event.target.classList.add("active");
+    });
+
+    container.addEventListener("mouseup", function(event) {
+      if(dragging) {
+        dragging = false;
+        formatTS();
+      }
+    });
+
+      $("button.command").click(function(){
+      $.post('https://api.thingspeak.com/update.json', {api_key: "YOUR_WRITE_API_KEY",field1: asBinaryArray().map(function(v) {
+        return "0x" + padLeft(bin2hex(v), 2);
+      }).join(",")})
+      .done(function(){
+       alert("Matrice envoyée !");})
+      .fail(function() {
+    alert( "error" );})});
+    $("button.reset").click(function(){ newMatrix();});
+  
+  </script></div>
+  
+  </body>
+</html>

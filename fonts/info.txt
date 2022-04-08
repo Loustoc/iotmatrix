@@ -1,0 +1,7 @@
+﻿Public Pixel :
+license: Public Domain
+link: https://www.fontspace.com/public-pixel-font-f72305
+
+Rockwell :
+license: Free for Personal Use
+link: https://dafontfamily.com/download/rockwell-font/
